@@ -446,9 +446,10 @@ contributors: Myles Borins, Guy Bedford, Daniel Ehrenberg
         1. <del>Return _result_.</del>
         1. <ins>Perform ! Call(_capability_.[[Reject]], *undefined*, &laquo;_result_.[[Value]]&raquo;).</ins>
       1. <ins>Otherwise,</ins>
+        1. Assert: _module_.[[Status]] is `"evaluated"` and _module_.[[EvaluationError]] is *undefined*.
+        1. Assert: _stack_ is empty.
         1. <ins>If _module_.[[AsyncEvaluating]] is *false*, then</ins>
           1. <ins>Perform ! Call(_module_.[[TopLevelCapability]].[[Resolve]], *undefined*, &laquo;*undefined*&raquo;).</ins>
-      1. Assert: _stack_ is empty.
       1. Return <del>*undefined*</del><ins>_capability_.[[Promise]]</ins>.
     </emu-alg>
 
@@ -493,7 +494,7 @@ contributors: Myles Borins, Guy Bedford, Daniel Ehrenberg
               1. <ins>Append _module_ to _requiredModule_.[[AsyncParentModules]].</ins>
         1. <del>Perform ? _module_.ExecuteModule().</del>
         1. <ins>If _module_.[[PendingAsyncDependencies]] is &gt; 0, set _module_.[[AsyncEvaluating]] to *true*.</ins>
-        1. <ins>Otherwise, if _module_.[[Async]] is *true*, Perform ! ExecuteAsyncModule(_module_).</ins>
+        1. <ins>Otherwise, if _module_.[[Async]] is *true*, perform ! ExecuteAsyncModule(_module_).</ins>
         1. <ins>Otherwise, perform ? _module_.ExecuteModule().</ins>
         1. Assert: _module_ occurs exactly once in _stack_.
         1. Assert: _module_.[[DFSAncestorIndex]] is less than or equal to _module_.[[DFSIndex]].
@@ -581,14 +582,14 @@ contributors: Myles Borins, Guy Bedford, Daniel Ehrenberg
             1. Assert: _m_.[[AsyncEvaluating]] is *true*.
             1. Let _cycleRoot_ be ! GetCycleRoot(_m_).
             1. If _cycleRoot_.[[EvaluationError]] is not *undefined*, return *undefined*.
-            1. If _module_.[[Async]] is *true*, then
+            1. If _m_.[[Async]] is *true*, then
               1. Perform ! ExecuteAsyncModule(_m_).
             1. Otherwise,
-              1. Let _result_ be _module_.ExecuteModule().
+              1. Let _result_ be _m_.ExecuteModule().
               1. If _result_ is a normal completion,
-                1. Perform ! AsyncModuleExecutionFulfilled(_module_).
+                1. Perform ! AsyncModuleExecutionFulfilled(_m_).
               1. Otherwise,
-                1. Perform ! AsyncModuleExecutionRejected(_module_, _result_.[[Value]]).
+                1. Perform ! AsyncModuleExecutionRejected(_m_, _result_.[[Value]]).
         1. If _module_.[[TopLevelCapability]] is not *undefined*, then
           1. Assert: _module_.[[DFSIndex]] is equal to _module_.[[DFSAncestorIndex]].
           1. Perform ! Call(_module_.[[TopLevelCapability]].[[Resolve]], *undefined*, &laquo;*undefined*&raquo;).
@@ -652,7 +653,7 @@ contributors: Myles Borins, Guy Bedford, Daniel Ehrenberg
         1. Else,
           1. Append _ee_ to _indirectExportEntries_.
       1. <ins>Let _async_ be _body_ Contains |AwaitExpression|.</ins>
-      1. Return Source Text Module Record { [[Realm]]: _realm_, [[Environment]]: *undefined*, [[Namespace]]: *undefined*, <ins>[[Async]]: _async_, [[ExecStarted]]: *false*, [[TopLevelCapability]]: *undefined*, [[AsyncParentModules]]: *undefined*, [[PendingAsyncDependencies]]: *undefined*, </ins>[[Status]]: `"unlinked"`, [[EvaluationError]]: *undefined*, [[HostDefined]]: _hostDefined_, [[ECMAScriptCode]]: _body_, [[RequestedModules]]: _requestedModules_, [[ImportEntries]]: _importEntries_, [[LocalExportEntries]]: _localExportEntries_, [[IndirectExportEntries]]: _indirectExportEntries_, [[StarExportEntries]]: _starExportEntries_, [[DFSIndex]]: *undefined*, [[DFSAncestorIndex]]: *undefined* }.
+      1. Return Source Text Module Record { [[Realm]]: _realm_, [[Environment]]: *undefined*, [[Namespace]]: *undefined*, <ins>[[Async]]: _async_, [[AsyncEvaluating]]: *false*, [[TopLevelCapability]]: *undefined*, [[AsyncParentModules]]: *undefined*, [[PendingAsyncDependencies]]: *undefined*, </ins>[[Status]]: `"unlinked"`, [[EvaluationError]]: *undefined*, [[HostDefined]]: _hostDefined_, [[ECMAScriptCode]]: _body_, [[RequestedModules]]: _requestedModules_, [[ImportEntries]]: _importEntries_, [[LocalExportEntries]]: _localExportEntries_, [[IndirectExportEntries]]: _indirectExportEntries_, [[StarExportEntries]]: _starExportEntries_, [[DFSIndex]]: *undefined*, [[DFSAncestorIndex]]: *undefined* }.
     </emu-alg>
     <emu-note>
       <p>An implementation may parse module source text and analyse it for Early Error conditions prior to the evaluation of ParseModule for that module source text. However, the reporting of any errors must be deferred until the point where this specification actually performs ParseModule upon that source text.</p>
